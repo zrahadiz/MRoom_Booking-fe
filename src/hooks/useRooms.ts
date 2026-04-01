@@ -2,12 +2,6 @@ import { useState, useEffect } from "react";
 import { getRooms } from "@/services/rooms";
 import type { Room, GetRoomsParams } from "@/types";
 
-interface UseRoomsResult {
-  rooms: Room[];
-  loading: boolean;
-  error: string | null;
-}
-
 export function useRooms(params: GetRoomsParams = {}) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [count, setCount] = useState(0);

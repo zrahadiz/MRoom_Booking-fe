@@ -38,8 +38,6 @@ export function useBookings(date: string | null = null, page: number = 1) {
   const cancelBooking = useCallback(
     async (bookingId: number) => {
       await deleteBooking(bookingId);
-
-      // refetch setelah delete
       fetchBookings();
     },
     [fetchBookings],
