@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { useRooms } from "@/hooks/useRooms";
 import { useRoomAvailability } from "@/hooks/useRoomAvailability";
 import { AvailabilityGrid } from "@/components/AvailabilityGrid";
 import { checkBooking, createBooking } from "@/services/bookings";
@@ -11,6 +10,7 @@ import {
 } from "@/utils/datetime";
 import { CURRENT_USER_ID } from "@/utils/constants";
 import type { Booking, Room } from "@/types";
+import { getAllRooms } from "@/services/rooms";
 
 interface BookingFormPageProps {
   selectedRoom?: Room | null;
@@ -23,8 +23,7 @@ export function BookingFormPage({
   onSuccess,
   onCancel,
 }: BookingFormPageProps) {
-  const { rooms } = useRooms();
-
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [roomId, setRoomId] = useState<number | "">(selectedRoom?.id ?? "");
   const [date, setDate] = useState(TODAY);
   const [startTime, setStartTime] = useState("09:00");
@@ -40,6 +39,10 @@ export function BookingFormPage({
     roomId !== "" ? roomId : null,
     date,
   );
+
+  useEffect(() => {
+    getAllRooms().then(setRooms);
+  }, []);
 
   useEffect(() => {
     setAvailability(null);

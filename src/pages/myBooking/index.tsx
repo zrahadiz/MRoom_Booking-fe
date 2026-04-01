@@ -15,15 +15,10 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
   const [filterDate, setFilterDate] = useState("");
   const [page, setPage] = useState(1);
 
-  const { bookings, loading, error, cancelBooking } = useBookings(
-    filterDate || null,
-  );
+  const { bookings, count, next, previous, loading, error, cancelBooking } =
+    useBookings(filterDate || null, page);
 
-  const totalPages = Math.ceil(bookings.length / BOOKINGS_PER_PAGE);
-  const paginated = bookings.slice(
-    (page - 1) * BOOKINGS_PER_PAGE,
-    page * BOOKINGS_PER_PAGE,
-  );
+  const totalPages = Math.ceil(count / BOOKINGS_PER_PAGE);
 
   const getRoom = (roomId: number): Room | undefined =>
     rooms.find((r) => r.id === roomId);
@@ -59,12 +54,16 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
           >
             My Bookings
           </h1>
+
           <p style={{ color: "#6B6860", fontSize: 15 }}>
             {loading
               ? "Loading…"
-              : `${bookings.length} reservation${bookings.length !== 1 ? "s" : ""}${filterDate ? ` on ${formatDate(filterDate)}` : ""}`}
+              : `${count} reservation${count !== 1 ? "s" : ""}${
+                  filterDate ? ` on ${formatDate(filterDate)}` : ""
+                }`}
           </p>
         </div>
+
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <input
             className="form-input"
@@ -76,15 +75,20 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
             }}
             style={{ width: 160 }}
           />
+
           {filterDate && (
             <button
               className="btn-secondary"
               style={{ padding: "10px 14px" }}
-              onClick={() => setFilterDate("")}
+              onClick={() => {
+                setFilterDate("");
+                setPage(1);
+              }}
             >
               Clear
             </button>
           )}
+
           <button className="btn-primary" onClick={onNew}>
             + New booking
           </button>
@@ -107,7 +111,7 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
         </div>
       )}
 
-      {!loading && paginated.length === 0 ? (
+      {!loading && bookings.length === 0 ? (
         <EmptyState hasFilter={!!filterDate} onNew={onNew} />
       ) : (
         <div
@@ -118,7 +122,7 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
             marginBottom: 24,
           }}
         >
-          {paginated.map((booking) => (
+          {bookings.map((booking) => (
             <BookingRow
               key={booking.id}
               booking={booking}
@@ -129,7 +133,13 @@ export function BookingsPage({ rooms, onNew, onToast }: BookingsPageProps) {
         </div>
       )}
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onChange={setPage}
+        hasNext={!!next}
+        hasPrevious={!!previous}
+      />
     </div>
   );
 }

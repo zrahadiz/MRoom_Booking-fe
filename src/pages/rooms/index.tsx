@@ -11,34 +11,28 @@ interface RoomsPageProps {
 }
 
 export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
-  console.log("RoomsPage rendered with todayBookings:", todayBookings);
   const [page, setPage] = useState(1);
-  const { rooms, loading, error } = useRooms();
 
-  const totalPages = Math.ceil(rooms.length / ROOMS_PER_PAGE);
-  const paginated = rooms.slice(
-    (page - 1) * ROOMS_PER_PAGE,
-    page * ROOMS_PER_PAGE,
-  );
+  const { rooms, count, next, previous, loading, error } = useRooms({
+    page,
+  });
+
+  const totalPages = Math.ceil(count / ROOMS_PER_PAGE);
 
   const getBookingCount = (roomId: number): number => {
-    const count = todayBookings.filter((b) => b.room === roomId).length;
-    console.log(count);
-    return count;
+    return todayBookings.filter((b) => b.room === roomId).length;
   };
 
   const totalCapacity = rooms.reduce((sum, r) => sum + r.capacity, 0);
-  const bookedRoomIds = new Set(todayBookings.map((b) => b.room));
 
   const stats = [
-    { label: "Total rooms", value: rooms.length },
-    { label: "Booked today", value: bookedRoomIds.size },
-    { label: "Available now", value: rooms.length - bookedRoomIds.size },
-    { label: "Total capacity", value: `${totalCapacity} seats` },
+    { label: "Total rooms", value: count },
+    { label: "Total capacity per Page", value: `${totalCapacity} seats` },
   ];
 
   return (
     <div>
+      {/* HEADER */}
       <div style={{ marginBottom: 32 }}>
         <h1
           style={{
@@ -52,15 +46,16 @@ export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
           Meeting Spaces
         </h1>
         <p style={{ color: "#6B6860", fontSize: 15 }}>
-          {loading ? "Loading rooms…" : `${rooms.length} rooms available`}
+          {loading ? "Loading rooms…" : `${count} rooms available`}
         </p>
       </div>
 
+      {/* STATS */}
       {!loading && (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(2, 1fr)",
             gap: 12,
             marginBottom: 32,
           }}
@@ -102,6 +97,7 @@ export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
         </div>
       )}
 
+      {/* ERROR */}
       {error && (
         <div
           style={{
@@ -118,6 +114,7 @@ export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
         </div>
       )}
 
+      {/* CONTENT */}
       {loading ? (
         <div
           style={{ textAlign: "center", padding: "60px 0", color: "#9B9890" }}
@@ -134,7 +131,7 @@ export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
               marginBottom: 24,
             }}
           >
-            {paginated.map((room) => (
+            {rooms.map((room) => (
               <RoomCard
                 key={room.id}
                 room={room}
@@ -143,7 +140,15 @@ export function RoomsPage({ onBook, todayBookings }: RoomsPageProps) {
               />
             ))}
           </div>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+
+          {/* PAGINATION */}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={setPage}
+            hasNext={!!next}
+            hasPrevious={!!previous}
+          />
         </>
       )}
     </div>

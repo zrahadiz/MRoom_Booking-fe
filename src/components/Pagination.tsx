@@ -2,10 +2,27 @@ interface PaginationProps {
   page: number;
   totalPages: number;
   onChange: (page: number) => void;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
 }
-
-export function Pagination({ page, totalPages, onChange }: PaginationProps) {
+export function Pagination({
+  page,
+  totalPages,
+  onChange,
+  hasNext,
+  hasPrevious,
+}: PaginationProps) {
   if (totalPages <= 1) return null;
+
+  const pages = [];
+
+  const start = Math.max(1, page - 2);
+  const end = Math.min(totalPages, page + 2);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
   return (
     <div
       style={{
@@ -15,15 +32,34 @@ export function Pagination({ page, totalPages, onChange }: PaginationProps) {
         marginTop: 16,
       }}
     >
-      {Array.from({ length: totalPages }, (_, i) => (
+      {/* PREV */}
+      <button
+        className="page-btn"
+        disabled={!hasPrevious}
+        onClick={() => onChange(page - 1)}
+      >
+        ←
+      </button>
+
+      {/* PAGE NUMBERS */}
+      {pages.map((p) => (
         <button
-          key={i}
-          className={`page-btn ${page === i + 1 ? "active" : ""}`}
-          onClick={() => onChange(i + 1)}
+          key={p}
+          className={`page-btn ${page === p ? "active" : ""}`}
+          onClick={() => onChange(p)}
         >
-          {i + 1}
+          {p}
         </button>
       ))}
+
+      {/* NEXT */}
+      <button
+        className="page-btn"
+        disabled={!hasNext}
+        onClick={() => onChange(page + 1)}
+      >
+        →
+      </button>
     </div>
   );
 }

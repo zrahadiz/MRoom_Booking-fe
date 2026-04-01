@@ -3,16 +3,12 @@ import { getBookings, deleteBooking } from "@/services/bookings";
 import { CURRENT_USER_ID } from "@/utils/constants";
 import type { Booking } from "@/types";
 
-interface UseBookingsResult {
-  bookings: Booking[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-  cancelBooking: (bookingId: number) => Promise<void>;
-}
-
-export function useBookings(date: string | null = null): UseBookingsResult {
+export function useBookings(date: string | null = null, page: number = 1) {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [count, setCount] = useState(0);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,23 +16,43 @@ export function useBookings(date: string | null = null): UseBookingsResult {
     setLoading(true);
     setError(null);
 
-    getBookings({ user: CURRENT_USER_ID, ...(date ? { date } : {}) })
-      .then(setBookings)
+    getBookings({
+      user: CURRENT_USER_ID,
+      ...(date ? { date } : {}),
+      page,
+    })
+      .then((data) => {
+        setBookings(data.results);
+        setCount(data.count);
+        setNext(data.next ?? null);
+        setPrevious(data.previous ?? null);
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [date]);
+  }, [date, page]);
 
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
 
   const cancelBooking = useCallback(
-    async (bookingId: number): Promise<void> => {
+    async (bookingId: number) => {
       await deleteBooking(bookingId);
-      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+
+      // refetch setelah delete
+      fetchBookings();
     },
-    [],
+    [fetchBookings],
   );
 
-  return { bookings, loading, error, refetch: fetchBookings, cancelBooking };
+  return {
+    bookings,
+    count,
+    next,
+    previous,
+    loading,
+    error,
+    refetch: fetchBookings,
+    cancelBooking,
+  };
 }

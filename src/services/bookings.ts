@@ -10,15 +10,16 @@ import API from "./api";
 
 export async function getBookings(
   params: GetBookingsParams = {},
-): Promise<Booking[]> {
+): Promise<PaginatedResponse<Booking>> {
   const query: Record<string, string> = {};
   if (params.user !== undefined) query.user = String(params.user);
   if (params.date) query.date = params.date;
+  if (params.page) query.page = String(params.page);
 
   const res = await API.get<PaginatedResponse<Booking>>("/bookings/", {
     params: query,
   });
-  return res.data.results;
+  return res.data;
 }
 
 export async function createBooking(body: CreateBookingBody): Promise<Booking> {

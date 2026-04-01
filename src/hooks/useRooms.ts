@@ -8,19 +8,29 @@ interface UseRoomsResult {
   error: string | null;
 }
 
-export function useRooms(params: GetRoomsParams = {}): UseRoomsResult {
+export function useRooms(params: GetRoomsParams = {}) {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [count, setCount] = useState(0);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
     setLoading(true);
     setError(null);
 
     getRooms(params)
       .then((data) => {
-        if (!cancelled) setRooms(data);
+        if (!cancelled) {
+          setRooms(data.results);
+          setCount(data.count);
+          setNext(data.next ?? null);
+          setPrevious(data.previous ?? null);
+        }
       })
       .catch((err: Error) => {
         if (!cancelled) setError(err.message);
@@ -28,10 +38,11 @@ export function useRooms(params: GetRoomsParams = {}): UseRoomsResult {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
-  }, [params.search, params.ordering]);
+  }, [params.page, params.search, params.ordering]);
 
-  return { rooms, loading, error };
+  return { rooms, count, next, previous, loading, error };
 }

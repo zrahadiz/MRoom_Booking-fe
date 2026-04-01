@@ -28,11 +28,13 @@ export interface Booking {
 export interface GetRoomsParams {
   search?: string;
   ordering?: "capacity" | "-capacity";
+  page?: number;
 }
 
 export interface GetBookingsParams {
   user?: number;
   date?: string;
+  page?: number;
 }
 
 export interface CreateBookingBody {
