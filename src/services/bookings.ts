@@ -27,7 +27,8 @@ export async function createBooking(body: CreateBookingBody): Promise<Booking> {
     const res = await API.post<Booking>("/bookings/", body);
     return res.data;
   } catch (err: any) {
-    const detail = err.response?.data?.detail;
+    const detail = err.response?.data?.non_field_errors?.[0] || err.message;
+    console.log(err.response);
     throw new Error(detail ?? "Failed to create booking");
   }
 }
